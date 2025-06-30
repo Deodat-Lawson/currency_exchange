@@ -1,5 +1,6 @@
 package org.example.currency_exchange_2.service;
 
+import org.example.currency_exchange_2.domain.MarketData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -12,9 +13,6 @@ import java.util.List;
 @Service
 public class BinanceDataService {
 
-  @Value("${data.symbols}")
-  private String symbolsConfig;
-
   private final String apiBaseUrl;
   private final RestTemplate restTemplate;
 
@@ -24,11 +22,13 @@ public class BinanceDataService {
     this.restTemplate = new RestTemplate();
   }
 
-  public Klines fetchKlines() {
-    String symbol = symbolsConfig.split(",")[0].trim();
+  public Klines fetchKlines(MarketData inputData) {
+    String symbol = inputData.getBase()+"U"+inputData.getQuote();
+    long startTime = inputData.getStartTime();
+    long endTime = inputData.getEndTime();
 
-    String url = String.format("%s/api/v3/klines?symbol=%s&interval=1m&limit=60",
-            apiBaseUrl, symbol);
+    String url = String.format("%s/api/v3/klines?symbol=%s&interval=1m&startTime=%s&endTime=%s&limit=60",
+            apiBaseUrl, symbol, startTime, endTime);
 
     try {
       Object[][] response = restTemplate.getForObject(url, Object[][].class);
