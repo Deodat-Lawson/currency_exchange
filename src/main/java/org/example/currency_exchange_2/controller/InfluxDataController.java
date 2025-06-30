@@ -30,13 +30,20 @@ public class InfluxDataController {
   @Value("${influx.bucket}")
   private String influxBucket;
 
-  private InfluxDBClient influxDBClient;
   private WriteApiBlocking writeApi;
 
   @PostConstruct
   void PostConstruct (){
-    influxDBClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrg, influxBucket);
+    if(applicationPropertiesCheck()){
+      System.err.println("application properties not defined");
+      return;
+    }
+    InfluxDBClient influxDBClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrg, influxBucket);
     writeApi = influxDBClient.getWriteApiBlocking();
+  }
+
+  boolean applicationPropertiesCheck(){
+    return influxUrl != null && influxBucket != null && influxOrg != null && influxToken != null;
   }
 
   @Measurement(name = "temperature")
