@@ -1,8 +1,11 @@
 package org.example.currency_exchange_2.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.example.currency_exchange_2.domain.MarketData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import com.influxdb.annotations.Column;
 import com.influxdb.annotations.Measurement;
@@ -23,11 +26,13 @@ import org.example.currency_exchange_2.service.BinanceDataService;
 
 @RestController
 @RequestMapping("/api/v0")
+@Validated
 public class CurrencyMarketDataController {
 
   @Autowired
   private BinanceDataService service;
 
+  //TODO: Separate Influx to a separate service
   @Value("${influx.url}")
   private String influxUrl;
 
@@ -99,10 +104,10 @@ public class CurrencyMarketDataController {
     String takerBuyQuoteAssetVolume;
   }
 
-
   // POST /api/v0
+  //TODO: test not null
   @PostMapping()
-  public ResponseEntity<String> postMarketData(MarketData inputData){
+  public ResponseEntity<String> postMarketData(@Valid @NotNull MarketData inputData){
     try {
       Klines klines = service.fetchKlines(inputData);
       KlinesData klinesData = new KlinesData();
@@ -126,6 +131,7 @@ public class CurrencyMarketDataController {
     }
   }
 
+  //TODO: remove the delete functions
   @DeleteMapping("column")
   public ResponseEntity<String> deleteThisColumn(String symbol){
     try{
