@@ -1,23 +1,16 @@
 package org.example.currency_exchange_2.service;
 
 import jakarta.annotation.PostConstruct;
-import lombok.NoArgsConstructor;
 import org.example.currency_exchange_2.domain.MarketData;
 import org.example.currency_exchange_2.domain.exception.InputInvalidException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.example.currency_exchange_2.domain.Klines;
 
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.io.BufferedReader;
-
-import java.util.List;
 
 @Service
 public class MarketDataValidationService {
