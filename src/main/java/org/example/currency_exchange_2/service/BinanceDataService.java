@@ -22,7 +22,7 @@ public class BinanceDataService {
 
   //TODO: Create an interface for data service with functions fetchKlines, getSymbol
   public Klines fetchKlines(MarketData inputData) {
-    String symbol = inputData.getBase()+"U"+inputData.getQuote();
+    String symbol = inputData.getBase()+inputData.getQuote();
     long startTime = inputData.getStartTime();
     long endTime = inputData.getEndTime();
 

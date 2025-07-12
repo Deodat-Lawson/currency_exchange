@@ -27,6 +27,7 @@ public class MarketDataValidationService {
   @PostConstruct
   private void loadValidSymbols() throws IOException {
       ClassPathResource resource = new ClassPathResource("assets/binanceSymbol.csv");
+      symbolHashMap = new HashSet<>();
       try (BufferedReader br = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
         String line;
         while ((line = br.readLine()) != null) {
