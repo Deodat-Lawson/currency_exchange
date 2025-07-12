@@ -27,6 +27,7 @@ spring.application.name=currency-exchange-app
 
 # Binance API Configuration
 binance.api.base-url=https://api.binance.com
+binance.api.klines-url=%s/api/v3/klines?symbol=%s&interval=1m&startTime=%s&endTime=%s&limit=60
 
 # InfluxDB Configuration
 influx.url=http://localhost:8086
@@ -38,6 +39,7 @@ influx.bucket=YOUR_INFLUX_DB_BUCKET
 **Configuration Parameters:**
 - `spring.application.name`: Your application identifier
 - `binance.api.base-url`: Binance API endpoint (usually `https://api.binance.com`)
+- `binance.api.klines-url`: URL template for fetching Kline data from Binance
 - `influx.url`: Your InfluxDB server URL
 - `influx.token`: InfluxDB API token (generated during setup)
 - `influx.org`: Your InfluxDB organization name

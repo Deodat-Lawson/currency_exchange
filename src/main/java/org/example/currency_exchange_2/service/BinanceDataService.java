@@ -11,31 +11,39 @@ import org.example.currency_exchange_2.domain.Klines;
 public class BinanceDataService {
 
   private final String apiBaseUrl;
+  private final String klinesUrlPattern;
   private final RestTemplate restTemplate;
 
   @Autowired
-  public BinanceDataService(@Value("${binance.api.base-url}") String apiBaseUrl) {
+  public BinanceDataService(
+          @Value("${binance.api.base-url}") String apiBaseUrl,
+          @Value("${binance.api.klines-url}") String klinesUrlPattern) {
     this.apiBaseUrl = apiBaseUrl;
+    this.klinesUrlPattern = klinesUrlPattern;
     this.restTemplate = new RestTemplate();
   }
 
-
-  //TODO: Create an interface for data service with functions fetchKlines, getSymbol
   public Klines fetchKlines(MarketData inputData) {
-    String symbol = inputData.getBase()+inputData.getQuote();
+    String symbol = inputData.getBase() + inputData.getQuote();
     long startTime = inputData.getStartTime();
     long endTime = inputData.getEndTime();
 
-    //TODO: make url in application properties
-    String url = String.format("%s/api/v3/klines?symbol=%s&interval=1m&startTime=%s&endTime=%s&limit=60",
-            apiBaseUrl, symbol, startTime, endTime);
+    // Use String.format with the injected pattern
+    String url = String.format(klinesUrlPattern, apiBaseUrl, symbol, startTime, endTime);
+
+    System.out.println("Requesting URL: " + url); // Debug log
 
     try {
       Object[][] response = restTemplate.getForObject(url, Object[][].class);
+      if (response == null || response.length == 0) {
+        System.err.println("No data returned from Binance API");
+        return null;
+      }
       return new Klines(response);
     } catch (Exception e) {
       System.err.println("Error fetching klines data: " + e.getMessage());
-      return null; //TODO: add
+      e.printStackTrace(); // More detailed error info
+      return null;
     }
   }
 }
