@@ -8,7 +8,6 @@ import org.springframework.validation.annotation.Validated;
 //TODO: Add in reasonable initial values for all the variables if its not provided in the parameters
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 @Validated
 public class MarketData {
@@ -21,4 +20,13 @@ public class MarketData {
 
   private Long startTime;
   private Long endTime;
+
+  //Mock data value to test controller
+  public MarketData(Integer exchangeId, String quote, String base, Long startTime, Long endTime){
+    this.exchangeId = exchangeId;
+    this.quote  = quote;
+    this.base = base;
+    this.startTime = startTime;
+    this.endTime = endTime;
+  }
 }

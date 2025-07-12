@@ -3,6 +3,8 @@ package org.example.currency_exchange_2.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.example.currency_exchange_2.domain.MarketData;
+import org.example.currency_exchange_2.service.MarketDataValidationService;
+import org.example.currency_exchange_2.service.BinanceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -18,11 +20,10 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.example.currency_exchange_2.domain.Klines;
 
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.temporal.Temporal;
 
-import org.example.currency_exchange_2.service.BinanceDataService;
+import java.time.OffsetDateTime;
+
+
 
 @RestController
 @RequestMapping("/api/v0")
@@ -31,6 +32,7 @@ public class CurrencyMarketDataController {
 
   @Autowired
   private BinanceDataService service;
+  private MarketDataValidationService validationService;
 
   //TODO: Separate Influx to a separate service
   @Value("${influx.url}")
@@ -49,19 +51,22 @@ public class CurrencyMarketDataController {
   private DeleteApi deleteApi;
 
   @PostConstruct
-  public void PostConstruct(){
-    if(applicationPropertiesMissing()){
+  public void PostConstruct() {
+    if (applicationPropertiesMissing()) {
       System.err.println("application properties not defined");
       return;
     }
     InfluxDBClient influxDBClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrg, influxBucket);
     writeApi = influxDBClient.getWriteApiBlocking();
     deleteApi = influxDBClient.getDeleteApi();
+    validationService = new MarketDataValidationService();
+
   }
 
-  public boolean applicationPropertiesMissing(){
+  public boolean applicationPropertiesMissing() {
     return influxUrl == null || influxBucket == null || influxOrg == null || influxToken == null;
   }
+
   @Measurement(name = "Klines data")
   private static class KlinesData {
     @Column
@@ -105,36 +110,34 @@ public class CurrencyMarketDataController {
   }
 
   // POST /api/v0
-  //TODO: test not null
   @PostMapping()
-  public ResponseEntity<String> postMarketData(@Valid @NotNull MarketData inputData){
-    try {
-      Klines klines = service.fetchKlines(inputData);
-      KlinesData klinesData = new KlinesData();
-      klinesData.base = inputData.getBase();
-      klinesData.quote = inputData.getQuote();
-      klinesData.openTime = klines.getOpenTime();
-      klinesData.closeTime = klines.getCloseTime();
-      klinesData.numberOfTrades = klines.getNumberOfTrades();
-      klinesData.openPrice = klines.getOpenPrice();
-      klinesData.closePrice = klines.getClosePrice();
-      klinesData.highPrice = klines.getHighPrice();
-      klinesData.lowPrice = klines.getLowPrice();
-      klinesData.volume = klines.getVolume();
-      klinesData.assetVolume = klines.getAssetVolume();
-      klinesData.takerBuyBaseAssetVolume = klines.getTakerBuyBaseAssetVolume();
-      klinesData.takerBuyQuoteAssetVolume = klines.getTakerBuyQuoteAssetVolume();
-      writeApi.writeMeasurement(WritePrecision.NS, klinesData);
-      return ResponseEntity.ok("Success");
-    } catch (Exception e) {
-      return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
-    }
+  public ResponseEntity<String> postMarketData(@Valid @NotNull MarketData inputData) {
+    validationService.checkData(inputData);
+    Klines klines = service.fetchKlines(inputData);
+    KlinesData klinesData = new KlinesData();
+    klinesData.base = inputData.getBase();
+    klinesData.quote = inputData.getQuote();
+    klinesData.openTime = klines.getOpenTime();
+    klinesData.closeTime = klines.getCloseTime();
+    klinesData.numberOfTrades = klines.getNumberOfTrades();
+    klinesData.openPrice = klines.getOpenPrice();
+    klinesData.closePrice = klines.getClosePrice();
+    klinesData.highPrice = klines.getHighPrice();
+    klinesData.lowPrice = klines.getLowPrice();
+    klinesData.volume = klines.getVolume();
+    klinesData.assetVolume = klines.getAssetVolume();
+    klinesData.takerBuyBaseAssetVolume = klines.getTakerBuyBaseAssetVolume();
+    klinesData.takerBuyQuoteAssetVolume = klines.getTakerBuyQuoteAssetVolume();
+    writeApi.writeMeasurement(WritePrecision.NS, klinesData);
+    return ResponseEntity.ok("Success");
   }
+
+  //TODO: add Get function that takes in exchangeId and returns Klines
 
   //TODO: remove the delete functions
   @DeleteMapping("column")
-  public ResponseEntity<String> deleteThisColumn(String symbol){
-    try{
+  public ResponseEntity<String> deleteThisColumn(String symbol) {
+    try {
       String predicate = String.format("symbol=\"%s\"", symbol);
 
       deleteApi.delete(
@@ -151,8 +154,8 @@ public class CurrencyMarketDataController {
   }
 
   @DeleteMapping("all")
-  public ResponseEntity<String> clearAllData(){
-    try{
+  public ResponseEntity<String> clearAllData() {
+    try {
       deleteApi.delete(
               OffsetDateTime.parse("1970-01-01T00:00:00Z"),
               OffsetDateTime.parse("2030-01-01T00:00:00Z"),

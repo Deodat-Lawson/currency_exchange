@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.example.currency_exchange_2.domain.Klines;
 
-import java.util.List;
-
 @Service
 public class BinanceDataService {
 
@@ -37,7 +35,7 @@ public class BinanceDataService {
       return new Klines(response);
     } catch (Exception e) {
       System.err.println("Error fetching klines data: " + e.getMessage());
-      return null;
+      return null; //TODO: add
     }
   }
 }
