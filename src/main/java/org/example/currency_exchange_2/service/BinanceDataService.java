@@ -39,7 +39,7 @@ public class BinanceDataService {
         System.err.println("No data returned from Binance API");
         return null;
       }
-      return new Klines(response);
+      return new Klines(inputData.getExchangeId(), response);
     } catch (Exception e) {
       System.err.println("Error fetching klines data: " + e.getMessage());
       e.printStackTrace(); // More detailed error info
