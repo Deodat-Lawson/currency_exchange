@@ -8,9 +8,10 @@ import lombok.*;
 @Getter
 @Setter
 public class Klines {
-  long openTime;
-  long closeTime;
-  int numberOfTrades;
+  Integer exchangeId;
+  Long openTime;
+  Long closeTime;
+  Integer numberOfTrades;
   String openPrice;
   String highPrice;
   String lowPrice;
@@ -20,9 +21,10 @@ public class Klines {
   String takerBuyBaseAssetVolume;
   String takerBuyQuoteAssetVolume;
 
-  public Klines(Object[][] table) {
-    if (table != null && table.length > 0 && table[0].length >= 12) {
+  public Klines(Integer exchangeId, Object[][] table) {
+    if (table != null && table.length > 0) {
       Object[] kline = table[0];
+      this.exchangeId = exchangeId;
       this.openTime = Long.parseLong(kline[0].toString());
       this.openPrice = kline[1].toString();
       this.highPrice = kline[2].toString();
@@ -35,8 +37,9 @@ public class Klines {
       this.takerBuyBaseAssetVolume = kline[9].toString();
       this.takerBuyQuoteAssetVolume = kline[10].toString();
     } else {
-      this.openTime = -1;
-      this.closeTime = -1;
+      this.exchangeId = -1;
+      this.openTime = -1L;
+      this.closeTime = -1L;
       this.numberOfTrades = -1;
       this.openPrice = "-1";
       this.highPrice = "-1";

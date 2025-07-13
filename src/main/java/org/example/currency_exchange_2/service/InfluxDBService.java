@@ -2,16 +2,16 @@ package org.example.currency_exchange_2.service;
 
 import com.influxdb.annotations.Column;
 import com.influxdb.annotations.Measurement;
-import com.influxdb.client.DeleteApi;
-import com.influxdb.client.InfluxDBClient;
-import com.influxdb.client.InfluxDBClientFactory;
-import com.influxdb.client.WriteApiBlocking;
+import com.influxdb.client.*;
 import com.influxdb.client.domain.WritePrecision;
+import com.influxdb.query.FluxTable;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Service
 public class InfluxDBService {
@@ -30,6 +30,7 @@ public class InfluxDBService {
 
   private WriteApiBlocking writeApi;
   private DeleteApi deleteApi;
+  private QueryApi queryApi;
 
   @PostConstruct
   public void PostConstruct() {
@@ -40,6 +41,7 @@ public class InfluxDBService {
     InfluxDBClient influxDBClient = InfluxDBClientFactory.create(influxUrl, influxToken.toCharArray(), influxOrg, influxBucket);
     writeApi = influxDBClient.getWriteApiBlocking();
     deleteApi = influxDBClient.getDeleteApi();
+    queryApi = influxDBClient.getQueryApi();
   }
 
   public boolean applicationPropertiesMissing() {
@@ -48,20 +50,26 @@ public class InfluxDBService {
 
   @Measurement(name = "Klines data")
   public static class KlinesData {
-    @Column
+    @Column(timestamp = true)
+    public Instant time;
+
+    @Column(tag = true)
+    public String exchangeId;
+
+    @Column(tag = true)
     public String base;
 
-    @Column
+    @Column(tag = true)
     public String quote;
 
     @Column
-    public long openTime;
+    public Long openTime;
 
     @Column
-    public long closeTime;
+    public Long closeTime;
 
     @Column
-    public int numberOfTrades;
+    public Integer numberOfTrades;
 
     @Column
     public String openPrice;
@@ -86,13 +94,37 @@ public class InfluxDBService {
 
     @Column
     public String takerBuyQuoteAssetVolume;
+
+    // Default constructor
+    public KlinesData() {
+      this.time = Instant.now();
+    }
   }
 
   public void writeKlinesData(KlinesData data) {
     if (writeApi == null) {
       throw new IllegalStateException("InfluxDB WriteApi not initialized");
     }
+    System.out.println("Write Success");
+    System.out.println(data);
     writeApi.writeMeasurement(WritePrecision.NS, data);
+  }
+
+  public List<KlinesData> queryKlinesData(Integer exchangeId){
+
+    System.out.println("exchangeId" + exchangeId);
+    //InfluxDb stores tags as String, so we need to parse in the exchange Id as a String
+    String flux = String.format(
+            "from(bucket: \"%s\") " +
+                    "|> range(start: -30d) " +
+                    "|> filter(fn: (r) => r[\"_measurement\"] == \"Klines data\") " +
+                    "|> filter(fn: (r) => r[\"exchangeId\"] == \"%s\") " +
+                    "|> group(columns: [\"base\", \"quote\", \"exchangeId\", \"_field\"]) " +
+                    "|> last() " +
+                    "|> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")",
+            influxBucket, exchangeId.toString()
+    );
+    return queryApi.query(flux, KlinesData.class);
   }
 
   public void deleteBySymbol(String symbol) {
