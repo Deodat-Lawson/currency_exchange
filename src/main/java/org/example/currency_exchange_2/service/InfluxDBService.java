@@ -105,14 +105,10 @@ public class InfluxDBService {
     if (writeApi == null) {
       throw new IllegalStateException("InfluxDB WriteApi not initialized");
     }
-    System.out.println("Write Success");
-    System.out.println(data);
     writeApi.writeMeasurement(WritePrecision.NS, data);
   }
 
   public List<KlinesData> queryKlinesData(Integer exchangeId){
-
-    System.out.println("exchangeId" + exchangeId);
     //InfluxDb stores tags as String, so we need to parse in the exchange Id as a String
     String flux = String.format(
             "from(bucket: \"%s\") " +

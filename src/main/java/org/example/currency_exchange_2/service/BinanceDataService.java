@@ -30,9 +30,6 @@ public class BinanceDataService {
 
     // Use String.format with the injected pattern
     String url = String.format(klinesUrlPattern, apiBaseUrl, symbol, startTime, endTime);
-
-    System.out.println("Requesting URL: " + url); // Debug log
-
     try {
       Object[][] response = restTemplate.getForObject(url, Object[][].class);
       if (response == null || response.length == 0) {
