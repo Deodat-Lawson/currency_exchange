@@ -23,10 +23,13 @@ public class BinanceDataService {
     this.restTemplate = new RestTemplate();
   }
 
+  //TODO: Add springboot retry dependency
   public Klines fetchKlines(MarketData inputData) {
     String symbol = inputData.getBase() + inputData.getQuote();
     long startTime = inputData.getStartTime();
     long endTime = inputData.getEndTime();
+
+    //TODO: If the endtime - starttime interval is greater than 500, output the entire list
 
     // Use String.format with the injected pattern
     String url = String.format(klinesUrlPattern, apiBaseUrl, symbol, startTime, endTime);
@@ -38,6 +41,7 @@ public class BinanceDataService {
       }
       return new Klines(inputData.getExchangeId(), response);
     } catch (Exception e) {
+      //TODO: throw an error instead of printing it out
       System.err.println("Error fetching klines data: " + e.getMessage());
       e.printStackTrace(); // More detailed error info
       return null;

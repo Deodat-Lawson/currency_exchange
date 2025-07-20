@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.io.BufferedReader;
 
+// TODO: Add Retried counter variables in the future in error message.
 @Service
 public class MarketDataValidationService {
   HashSet<String> symbolHashMap;

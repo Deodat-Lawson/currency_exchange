@@ -102,9 +102,6 @@ public class InfluxDBService {
   }
 
   public void writeKlinesData(KlinesData data) {
-    if (writeApi == null) {
-      throw new IllegalStateException("InfluxDB WriteApi not initialized");
-    }
     writeApi.writeMeasurement(WritePrecision.NS, data);
   }
 
@@ -123,10 +120,8 @@ public class InfluxDBService {
     return queryApi.query(flux, KlinesData.class);
   }
 
+  // Only for testing purposes
   public void deleteBySymbol(String symbol) {
-    if (deleteApi == null) {
-      throw new IllegalStateException("InfluxDB DeleteApi not initialized");
-    }
     try {
       String predicate = String.format("symbol=\"%s\"", symbol);
       deleteApi.delete(
@@ -142,9 +137,6 @@ public class InfluxDBService {
   }
 
   public void clearAllData() {
-    if (deleteApi == null) {
-      throw new IllegalStateException("InfluxDB DeleteApi not initialized");
-    }
     try {
       deleteApi.delete(
               OffsetDateTime.parse("1970-01-01T00:00:00Z"),

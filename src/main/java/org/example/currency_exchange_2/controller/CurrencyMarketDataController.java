@@ -8,6 +8,7 @@ import org.example.currency_exchange_2.service.MarketDataValidationService;
 import org.example.currency_exchange_2.service.BinanceDataService;
 import org.example.currency_exchange_2.service.InfluxDBService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,7 @@ public class CurrencyMarketDataController {
   private MarketDataValidationService validationService;
 
   @PostMapping()
-  public ResponseEntity<String> postMarketData(@Valid @NotNull @RequestBody MarketData inputData) {
+  public ResponseEntity postMarketData(@Valid @NotNull @RequestBody MarketData inputData) {
     validationService.checkData(inputData);
     Klines klines = service.fetchKlines(inputData);
 
@@ -52,7 +53,7 @@ public class CurrencyMarketDataController {
     klinesData.takerBuyQuoteAssetVolume = klines.getTakerBuyQuoteAssetVolume();
 
     influxDBService.writeKlinesData(klinesData);
-    return ResponseEntity.ok("Success");
+    return new ResponseEntity(HttpStatus.CREATED);
   }
 
   @GetMapping("/{exchangeId}")

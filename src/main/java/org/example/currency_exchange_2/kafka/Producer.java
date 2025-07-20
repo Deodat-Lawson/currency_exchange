@@ -7,6 +7,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
+//TODO: Make this spring kafka. Producer send input data. (POST request data) so get from binance and sends it consumer
+//TODO: 1 Consumer to fetch data and store into influxDB
+//TODO: Kafka functionality: Calculate large time interval data (example, 10min = 10 * 1 min data)
+//TODO: Implement Redis Spring Database
 public class Producer {
   private static final Logger log = LoggerFactory.getLogger(Producer.class);
 
@@ -19,6 +23,8 @@ public class Producer {
     properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
     properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
     properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+
+
 
     //create the producer
     KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
