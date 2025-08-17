@@ -37,6 +37,7 @@ public class Klines {
       this.takerBuyBaseAssetVolume = kline[9].toString();
       this.takerBuyQuoteAssetVolume = kline[10].toString();
     } else {
+      System.out.println("table is null");
       this.exchangeId = -1;
       this.openTime = -1L;
       this.closeTime = -1L;

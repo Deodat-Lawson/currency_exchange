@@ -13,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import org.example.currency_exchange_2.domain.Klines;
 import org.springframework.retry.annotation.EnableRetry;
 
-import java.net.BindException;
+import java.util.ArrayList;
 
 @Service
 @EnableRetry
@@ -36,17 +36,28 @@ public class BinanceDataService {
           maxAttempts = 3,
           backoff = @Backoff(delay = 1000, multiplier = 2)
   )
-  public Klines fetchKlines(MarketData inputData) {
+  public ArrayList<Klines> fetchKlines(MarketData inputData) {
     String symbol = inputData.getBase() + inputData.getQuote();
     long startTime = inputData.getStartTime();
     long endTime = inputData.getEndTime();
 
-    //TODO: If the endtime - starttime interval is greater than 500, output the entire list
+    ArrayList<Klines> klinesList = new ArrayList<>();
 
-    // Use String.format with the injected pattern
-    String url = String.format(klinesUrlPattern, apiBaseUrl, symbol, startTime, endTime);
-    Object[][] response = restTemplate.getForObject(url, Object[][].class);
-    return new Klines(inputData.getExchangeId(), response);
+    long currentStart = startTime;
+    System.out.println("fetching klines");
+
+    while(endTime > currentStart){
+      long currentEnd = Math.min(endTime, currentStart + 5000);
+      String url = String.format(klinesUrlPattern, apiBaseUrl, symbol, currentStart, currentEnd);
+      Object[][] response = restTemplate.getForObject(url, Object[][].class);
+      System.out.println("response" + response.length + " " + response[0].length);
+      Klines currentInterval = new Klines(inputData.getExchangeId(), response);
+      System.out.println("adding klines" + currentInterval);
+      klinesList.add(currentInterval);
+      currentStart += 5000;
+    }
+
+    return klinesList;
   }
 
   @Recover
