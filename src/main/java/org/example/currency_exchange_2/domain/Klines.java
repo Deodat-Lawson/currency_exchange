@@ -21,21 +21,20 @@ public class Klines {
   String takerBuyBaseAssetVolume;
   String takerBuyQuoteAssetVolume;
 
-  public Klines(Integer exchangeId, Object[][] table) {
+  public Klines(Integer exchangeId, Object[] table) {
     if (table != null && table.length > 0) {
-      Object[] kline = table[0];
       this.exchangeId = exchangeId;
-      this.openTime = Long.parseLong(kline[0].toString());
-      this.openPrice = kline[1].toString();
-      this.highPrice = kline[2].toString();
-      this.lowPrice = kline[3].toString();
-      this.closePrice = kline[4].toString();
-      this.volume = kline[5].toString();
-      this.closeTime = Long.parseLong(kline[6].toString());
-      this.assetVolume = kline[7].toString();
-      this.numberOfTrades = Integer.parseInt(kline[8].toString());
-      this.takerBuyBaseAssetVolume = kline[9].toString();
-      this.takerBuyQuoteAssetVolume = kline[10].toString();
+      this.openTime = Long.parseLong(table[0].toString());
+      this.openPrice = table[1].toString();
+      this.highPrice = table[2].toString();
+      this.lowPrice = table[3].toString();
+      this.closePrice = table[4].toString();
+      this.volume = table[5].toString();
+      this.closeTime = Long.parseLong(table[6].toString());
+      this.assetVolume = table[7].toString();
+      this.numberOfTrades = Integer.parseInt(table[8].toString());
+      this.takerBuyBaseAssetVolume = table[9].toString();
+      this.takerBuyQuoteAssetVolume = table[10].toString();
     } else {
       this.exchangeId = -1;
       this.openTime = -1L;

@@ -34,25 +34,29 @@ public class CurrencyMarketDataController {
   @PostMapping()
   public ResponseEntity postMarketData(@Valid @NotNull @RequestBody MarketData inputData) {
     validationService.checkData(inputData);
-    Klines klines = service.fetchKlines(inputData);
+    System.out.println("DEBUG: calling post");
+    ArrayList<Klines> klines = service.fetchKlines(inputData);
 
-    InfluxDBService.KlinesData klinesData = new InfluxDBService.KlinesData();
-    klinesData.exchangeId = inputData.getExchangeId().toString();
-    klinesData.base = inputData.getBase();
-    klinesData.quote = inputData.getQuote();
-    klinesData.openTime = klines.getOpenTime();
-    klinesData.closeTime = klines.getCloseTime();
-    klinesData.numberOfTrades = klines.getNumberOfTrades();
-    klinesData.openPrice = klines.getOpenPrice();
-    klinesData.closePrice = klines.getClosePrice();
-    klinesData.highPrice = klines.getHighPrice();
-    klinesData.lowPrice = klines.getLowPrice();
-    klinesData.volume = klines.getVolume();
-    klinesData.assetVolume = klines.getAssetVolume();
-    klinesData.takerBuyBaseAssetVolume = klines.getTakerBuyBaseAssetVolume();
-    klinesData.takerBuyQuoteAssetVolume = klines.getTakerBuyQuoteAssetVolume();
+    for (int i = 0; i < klines.size(); i++) {
+      Klines thisKline = klines.get(i);
+      InfluxDBService.KlinesData klinesData = new InfluxDBService.KlinesData();
+      klinesData.exchangeId = inputData.getExchangeId().toString();
+      klinesData.base = inputData.getBase();
+      klinesData.quote = inputData.getQuote();
+      klinesData.openTime = thisKline.getOpenTime();
+      klinesData.closeTime = thisKline.getCloseTime();
+      klinesData.numberOfTrades = thisKline.getNumberOfTrades();
+      klinesData.openPrice = thisKline.getOpenPrice();
+      klinesData.closePrice = thisKline.getClosePrice();
+      klinesData.highPrice = thisKline.getHighPrice();
+      klinesData.lowPrice = thisKline.getLowPrice();
+      klinesData.volume = thisKline.getVolume();
+      klinesData.assetVolume = thisKline.getAssetVolume();
+      klinesData.takerBuyBaseAssetVolume = thisKline.getTakerBuyBaseAssetVolume();
+      klinesData.takerBuyQuoteAssetVolume = thisKline.getTakerBuyQuoteAssetVolume();
+      influxDBService.writeKlinesData(klinesData);
+    }
 
-    influxDBService.writeKlinesData(klinesData);
     return new ResponseEntity(HttpStatus.CREATED);
   }
 
