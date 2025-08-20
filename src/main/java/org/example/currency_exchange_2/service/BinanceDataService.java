@@ -2,6 +2,7 @@ package org.example.currency_exchange_2.service;
 
 import org.example.currency_exchange_2.domain.MarketData;
 import org.example.currency_exchange_2.service.exception.FetchDataRetryFailedException;
+import org.example.currency_exchange_2.service.exception.InvalidTimeRangeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
@@ -44,17 +45,21 @@ public class BinanceDataService {
     ArrayList<Klines> klinesList = new ArrayList<>();
 
     long currentStart = startTime;
-    System.out.println("fetching klines");
+
+    Long oneMin = 60000L;
 
     while(endTime > currentStart){
-      long currentEnd = Math.min(endTime, currentStart + 5000);
+      long currentEnd = Math.min(endTime, currentStart + oneMin * 1000);
       String url = String.format(klinesUrlPattern, apiBaseUrl, symbol, currentStart, currentEnd);
       Object[][] response = restTemplate.getForObject(url, Object[][].class);
-      System.out.println("response" + response.length + " " + response[0].length);
-      Klines currentInterval = new Klines(inputData.getExchangeId(), response);
-      System.out.println("adding klines" + currentInterval);
-      klinesList.add(currentInterval);
-      currentStart += 5000;
+      if(response == null){
+        throw new InvalidTimeRangeException("Invalid Time Range");
+      }
+      for (int i = 0; i < response.length; i++) {
+        Klines currentInterval = new Klines(inputData.getExchangeId(), response[i]);
+        klinesList.add(currentInterval);
+      }
+      currentStart += oneMin * 1000;
     }
 
     return klinesList;
